@@ -166,8 +166,8 @@ class Ball {
             // Pad hit
             var playerClientRect = this.playerModel.getBoundingClientRect();
             if (this.bottomPosition <= document.body.clientHeight - playerClientRect.top
-                && this.leftPosition + 20 >= playerClientRect.left
-                && this.leftPosition <= playerClientRect.right) {
+                && this.leftPosition + 10 >= playerClientRect.left
+                && this.leftPosition -10 <= playerClientRect.right) {
                 var percentsOfPad = ((this.leftPosition - (this.playerModel.offsetLeft + this.playerModel.offsetWidth / 2)) / this.playerModel.offsetWidth) * 1.5;
                 this.speedHorizontal = percentsOfPad * this.ballSpeed;
                 this.speedVertical = Math.sqrt(Math.pow(this.ballSpeed, 2) - Math.pow(this.speedHorizontal, 2));
