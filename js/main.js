@@ -5,8 +5,6 @@ class Player {
     constructor() {
         this._createModel();
         this.moveInit();
-        this.moveLeft = 0;
-        this.moveRight = 0;
         this.mousePosition = document.body.clientWidth / 2;
     }
 
@@ -54,9 +52,10 @@ class Player {
                 self.moveRight = 0;
             }
         });
+
+        // TODO: rebuild with movement amount instead of pageX (is it possible for mouse to always stay inside?)
         document.addEventListener('mousemove', function(event) {
             self.mousePosition = event.pageX;
-            //console.log(this.mousePosition);
         });
     }
 
@@ -71,24 +70,6 @@ class Player {
         // Move
         this.playerModel.style.left = newPosition + '%';
     }
-    //move() {
-    //    if (this.moveRight || this.moveLeft) {
-    //        this.currentSpeed = this.moveRight - this.moveLeft;
-    //
-    //        if (!model) var model = this.playerModel;
-    //
-    //        let currentPositionLeft = parseFloat(model.style.left);
-    //        let maxRightPosition = 95;
-    //        let newPosition = currentPositionLeft + this.currentSpeed;
-    //        // Limit pad movement
-    //        if (newPosition < 5) newPosition = 5;
-    //        if (newPosition > maxRightPosition)
-    //            newPosition = maxRightPosition;
-    //
-    //        // Move
-    //        model.style.left = newPosition + '%';
-    //    }
-    //}
 
     getModel() {
         return this.playerModel;
@@ -311,12 +292,13 @@ var killedBricks = 0;
 var isLost = 0;
 
 function initialize() {
-    var logicCycleTime = 16;
     var player1 = new Player();
     var ball    = new Ball(player1);
+    var requestAnimationFrame;
+
     gameIsStarted = false;
     bricksArray = Levels._createLevel1();
-    //var brick = new Brick(100, 100)
+
     document.addEventListener('keypress', function(event) {
         if (event.keyCode == 32) gameIsStarted = true;
         Util.adjustPictureForGame();
@@ -325,11 +307,10 @@ function initialize() {
         gameIsStarted = true;
         Util.adjustPictureForGame();
     });
-    (function() {
-        var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-            window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-        window.requestAnimationFrame = requestAnimationFrame;
-    })();
+
+    requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+        window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+    window.requestAnimationFrame = requestAnimationFrame;
 
     function render() {
         player1.move();
@@ -338,10 +319,6 @@ function initialize() {
     }
 
     requestAnimationFrame(render);
-    // Main cycle
-    //setInterval(function() {
-    //
-    //}, logicCycleTime);
 }
 
 window.onload = initialize;
