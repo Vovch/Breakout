@@ -157,46 +157,117 @@ class Ball {
             }
 
             //Brick hit
-            let ballModel = this.ballModel;
+            //let ballModel = this.ballModel;
             for (let i = 0; i < bricksArray.length; i++) {
                 let brickModel = bricksArray[i].brickModel;
                 let brickModelLeft = brickModel.offsetLeft;
                 let brickModelRight = brickModel.offsetLeft + brickModel.offsetWidth;
                 let brickModelTop = brickModel.offsetTop;
                 let brickModelBottom = brickModel.offsetTop + brickModel.offsetWidth;
-                let ballCenterLeft = ballModel.offsetLeft + ballModel.offsetWidth / 2;
-                let ballCenterTop = ballModel.offsetTop + ballModel.offsetHeight / 2;
-                let ballCenterOffset = ballModel.offsetWidth * Math.sqrt(2) / 4;
-                if(Util.rect2rectCollision(ballModel, brickModel)) {
-                    // TODO: rebuld brick collision function si it will check collisions right
+                //let ballCenterLeft = ballModel.offsetLeft + ballModel.offsetWidth / 2;
+                //let ballCenterTop = ballModel.offsetTop + ballModel.offsetHeight / 2;
+                //let ballCenterOffset = ballModel.offsetWidth * Math.sqrt(2) / 4;
+                //if(Util.rect2rectCollision(ballModel, brickModel)) {
+                    // TODO: rebuild brick collision function so it will check collisions right
                     // It should be done for each collision case (left, right, top, bottom, each corner)
-                    if (ballCenterLeft + ballCenterOffset >= brickModelLeft + this.speedHorizontal * 2
-                        && ballCenterLeft - ballCenterOffset <= brickModelRight + this.speedHorizontal * 2) {
-                        this.speedVertical = -this.speedVertical;
-                        this.bottomPosition += this.speedVertical * 2;
-                        console.log('collided vertical');
-                    } else if (ballCenterTop + ballCenterOffset >= brickModelTop + this.speedVertical * 2
-                                && ballCenterTop - ballCenterOffset <= brickModelBottom - this.speedVertical * 2) {
-                        this.speedHorizontal = -this.speedHorizontal;
-                        this.leftPosition += this.speedHorizontal * 2;
-                        console.log('collided horizontal');
-                    } else {
-                        this.speedHorizontal = -this.speedHorizontal;
-                        this.speedVertical = -this.speedVertical;
-                        this.leftPosition += this.speedHorizontal * 2;
-                        this.bottomPosition += this.speedVertical * 2;
-                        console.log('collided horizontal and vertical');
+                    //if (ballCenterLeft + ballCenterOffset >= brickModelLeft + this.speedHorizontal * 2
+                    //    && ballCenterLeft - ballCenterOffset <= brickModelRight + this.speedHorizontal * 2) {
+                    //    this.speedVertical = -this.speedVertical;
+                    //    this.bottomPosition += this.speedVertical * 2;
+                    //    console.log('collided vertical');
+                    //} else if (ballCenterTop + ballCenterOffset >= brickModelTop + this.speedVertical * 2
+                    //            && ballCenterTop - ballCenterOffset <= brickModelBottom - this.speedVertical * 2) {
+                    //    this.speedHorizontal = -this.speedHorizontal;
+                    //    this.leftPosition += this.speedHorizontal * 2;
+                    //    console.log('collided horizontal');
+                    //} else {
+                    //    this.speedHorizontal = -this.speedHorizontal;
+                    //    this.speedVertical = -this.speedVertical;
+                    //    this.leftPosition += this.speedHorizontal * 2;
+                    //    this.bottomPosition += this.speedVertical * 2;
+                    //    console.log('collided horizontal and vertical');
+                    //}
+                    let x0 = this.oldPosX + 10;
+                    let x1 = this.leftPosition + 10;
+                    let y0 = this.oldPosY + 10;
+                    let y1 = this.bottomPosition + 10;
+                    let xbl1 = brickModelLeft;
+                    let xbl2 = brickModelRight;
+                    let ybl1 = document.body.clientHeight - brickModelBottom; // Bottom
+                    let ybl2 = document.body.clientHeight - brickModelTop; // Top
+                    let k = (y1 - y0) / (x1 - x0);
+                    let b = y1 - k * x1;
+                    let j = 0;
+                    let xs = [xbl1, xbl2];
+                    let ys = [ybl1, ybl2];
+                    let collisionPoints = [];
+
+                    // TODO: rebuild Math.abs() numbers
+                    for (j = 0; j < xs.length; j++) {
+                        if (xs[j] !== 0) {
+                            var y = k * xs[j] + b + 10;
+                            var y2 = k * xs[j] + b - 10;
+                        }
+                        if ((y >= ybl1 &&
+                            y <= ybl2 ||
+                            y2 >= ybl1 &&
+                            y2 <= ybl2) &&
+                            Math.abs(x1 - x0) > Math.abs(xs[j] - x0)) {
+                            collisionPoints.push({x: xs[j], y: y});
+                        }
+                    }
+                    for (j = 0; j < ys.length; j++) {
+                        if (ys[j] !== 0) {
+                            var x = ((ys[j] - b) / k) + 10;
+                            var x2 = ((ys[j] - b) / k) - 10;
+                        }
+                        if ((x >= xbl1 &&
+                            x <= xbl2 ||
+                            x2 >= xbl1 &&
+                            x2 <= xbl2) &&
+                            Math.abs(y1 - y0) > Math.abs(ys[j] - y0)) {
+                            collisionPoints.push({x: x, y: ys[j]});
+                        }
                     }
 
-                    brickModel.style.display = 'none';
-                    killedBricks++;
-                    if (killedBricks >= bricksArray.length) {
-                        Util.win();
-                    }
+                    this.chooseCollision = function chooseCollision() {
+                        let l = [];
+                        collisionPoints.forEach(function pickOneCollision(item) {
+                            let itemLength = Math.sqrt(Math.pow((x0 - item.x), 2) + Math.pow((y0 - item.y), 2));
+                            l.push(itemLength);
+                        });
+                        let min = Math.min.apply(Math, l);
+                        let index = l.indexOf(min);
+                        return collisionPoints[index];
+                    };
 
-                    break;
-                }
+                    this.chooseDirectionAndPosition = function chooseDirection(collisionObject) {
+                        if (Math.round(collisionObject.x) == Math.round(xbl1) ||
+                            Math.round(collisionObject.x) == Math.round(xbl2)) {
+                            this.speedHorizontal = -this.speedHorizontal;
+                            this.leftPosition += this.speedHorizontal * 2;
+                        } else {
+                            this.speedVertical = -this.speedVertical;
+                            this.bottomPosition += this.speedVertical * 2;
+                        }
+                        brickModel.style.display = 'none';
+                        killedBricks++;
+                        if (killedBricks >= bricksArray.length) {
+                            Util.win();
+                        }
+                    };
+
+                    if (collisionPoints.length) {
+                        let collisionObj = this.chooseCollision();
+                        if (collisionObj) {
+                            this.chooseDirectionAndPosition(collisionObj);
+                            break;
+                        }
+                    }
+                //}
             }
+            this.oldPosX = this.leftPosition;
+            this.oldPosY = this.bottomPosition;
         }
 
         this.ballModel.style.left = this.leftPosition + 'px';
@@ -255,12 +326,12 @@ class Levels {
 }
 
 class Util {
-    static rect2rectCollision(obj1, obj2) {
-        return (obj1.offsetLeft <= obj2.offsetLeft + obj2.offsetWidth
-            && obj1.offsetLeft + obj1.offsetWidth  >=  obj2.offsetLeft
-            && obj1.offsetTop + obj1.offsetHeight >=  obj2.offsetTop
-            && obj1.offsetTop <= obj2.offsetTop +  obj2.offsetHeight);
-    }
+    //static rect2rectCollision(obj1, obj2) {
+    //    return (obj1.offsetLeft <= obj2.offsetLeft + obj2.offsetWidth
+    //        && obj1.offsetLeft + obj1.offsetWidth  >=  obj2.offsetLeft
+    //        && obj1.offsetTop + obj1.offsetHeight >=  obj2.offsetTop
+    //        && obj1.offsetTop <= obj2.offsetTop +  obj2.offsetHeight);
+    //}
 
     static adjustPictureForGame() {
         document.body.style.cursor = 'none';
